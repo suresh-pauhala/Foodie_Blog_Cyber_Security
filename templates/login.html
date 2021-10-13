@@ -18,8 +18,8 @@
                   <input type="text" class="form-control" name="email"><br>
                   <label>Password</label><br>
                   <input type="password" class="form-control" name="password"><br>
-
-                  <input type="submit" style="margin-left:32%; width:35%;" class="btn btn-success btn-md" value="login" id="submitbtn">
+                    {{recaptcha}}
+                  <input type="submit" style="margin-left:32%; width:35%;" class="btn btn-success btn-md mt-3" value="login" id="submitbtn">
                   {% with messages = get_flashed_messages() %}
                    {% if messages %}
                     {% for message in messages %}

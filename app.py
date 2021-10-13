@@ -96,36 +96,37 @@ def validate_login():
     email = request.form.get('email')
     password = request.form.get('password')
     user = cur.execute("SELECT id, email, password FROM user WHERE email=?", (email,)).fetchone()
-
-    if len(password) <= 10:
-        if recaptcha.verify():
-            password = hashlib.sha256(password.encode('utf-8')).hexdigest()
-            print(user[2])
-            print(password)
-            if user[2] == password:
-                message = Message('OTP', sender = 'studydsscw2@gmail.com', recipients=[email])
-                message.body ='Your Login OTP is : {}'.format(str(otp))
-                mail.send(message)
-                my_user_id = user[0]
-                return redirect(url_for('email_verification', my_user_id=my_user_id))
-            else:
-                attempt = session.get('attempt')
-                attempt -= 1
-                session['attempt'] = attempt
-                if attempt <= 0:
-                    flash("Account is locked out due to invalid login attempts" )
-                    return render_template('login.html',attempt=attempt)
-                flash("Wrong credentials!!, last %s attempts left " % session.get('attempt'))
-                return redirect('/login')
+    if user:
+        if len(password) <= 10:
+            if recaptcha.verify():
+                password = hashlib.sha256(password.encode('utf-8')).hexdigest()
+                if user[2] == password:
+                    message = Message('OTP', sender = 'studydsscw2@gmail.com', recipients=[email])
+                    message.body ='Your Login OTP is : {}'.format(str(otp))
+                    mail.send(message)
+                    my_user_id = user[0]
+                    return redirect(url_for('email_verification', my_user_id=my_user_id))
+                else:
+                    attempt = session.get('attempt')
+                    attempt -= 1
+                    session['attempt'] = attempt
+                    if attempt <= 0:
+                        flash("Account is locked out due to invalid login attempts" )
+                        return render_template('login.html',attempt=attempt)
+                    flash("Wrong credentials!!, last %s attempts left " % session.get('attempt'))
+                    return redirect('/login')
+        else:
+            attempt = session.get('attempt')
+            attempt -= 1
+            session['attempt'] = attempt
+            if attempt <= 0:
+                flash("Account is locked out due to invalid login attempts")
+                return render_template('login.html', attempt=attempt)
+            flash("Please Enter a password less than equals 10 characters, last %s attempt left" % session.get('attempt'))
+            return redirect('/login')
     else:
-        attempt = session.get('attempt')
-        attempt -= 1
-        session['attempt'] = attempt
-        if attempt <= 0:
-            flash("Account is locked out due to invalid login attempts")
-            return render_template('login.html', attempt=attempt)
-        flash("Please Enter a password less than equals 10 characters, last %s attempt left" % session.get('attempt'))
-        return redirect('/login')
+        flash("Invalid Input")
+        return redirect("/login")
 
 
 
